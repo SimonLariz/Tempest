@@ -34,7 +34,7 @@ func checkConfig() {
 	}
 }
 
-func getLocation() zipCodeResponse {
+func GetLocation() zipCodeResponse {
 	// Check the config file
 	checkConfig()
 	// Check config file for ZIP code
@@ -74,14 +74,14 @@ func validateZipCode(zipCode string) (bool, zipCodeResponse) {
 
 func GetLocationInfo() {
 	// Print the location information
-	user_location := getLocation()
+	user_location := GetLocation()
 	fmt.Println("Location: ")
 	fmt.Println(user_location.Places[0].PlaceName, ", ", user_location.Places[0].State)
 }
 
 func GetZipCode() string {
 	// Get the zip code from the user
-	zipCodeJSON := getLocation()
+	zipCodeJSON := GetLocation()
 	return zipCodeJSON.PostCode
 }
 
@@ -96,8 +96,6 @@ func getZipCodeFromUser() zipCodeResponse {
 		// Validate the zip code
 		zipCodeIsValid, zipCodeJSON := validateZipCode(zipCode)
 		if zipCodeIsValid {
-			// Prompt the user to save the zip code
-			promptUserToSaveZipCode(zipCode)
 			return zipCodeJSON
 		} else {
 			fmt.Println("Invalid zip code. Please try again.")

@@ -1,3 +1,12 @@
+package weather
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+)
+
 type weatherResponse struct {
 	Location struct {
 		Name           string  `json:"name"`
@@ -44,4 +53,19 @@ type weatherResponse struct {
 		GustMph    float64 `json:"gust_mph"`
 		GustKph    float64 `json:"gust_kph"`
 	} `json:"current"`
+}
+
+func getWeather(zipCode string, apiKey string) weatherResponse {
+	weatherAPIEndpoint := "https://api.weatherapi.com/v1/current.json?key=" + apiKey + "&q=" + zipCode
+	resp, err := http.Get(weatherAPIEndpoint)
+	if err != nil || resp.StatusCode != 200 {
+		fmt.Println("Failed to get weather data")
+		os.Exit(1)
+	}
+
+	defer resp.Body.Close()
+	var weatherResponse weatherResponse
+	json.NewDecoder(resp.Body).Decode(&weatherResponse)
+
+	return weatherResponse
 }
