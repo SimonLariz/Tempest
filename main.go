@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/SimonLariz/Tempest/pkg/location"
 	"github.com/joho/godotenv"
 )
 
@@ -25,4 +26,10 @@ func main() {
 		return
 	}
 	fmt.Println("API Key: ", apiKey)
+
+	// Get the location info
+	location.GetLocationInfo()
+	zipCode := location.GetZipCode()
+	fmt.Println("Zip Code: ", zipCode)
+	location.ClearLocation()
 }
