@@ -55,7 +55,7 @@ type weatherResponse struct {
 	} `json:"current"`
 }
 
-func getWeather(zipCode string, apiKey string) weatherResponse {
+func GetWeather(zipCode string, apiKey string) weatherResponse {
 	weatherAPIEndpoint := "https://api.weatherapi.com/v1/current.json?key=" + apiKey + "&q=" + zipCode
 	resp, err := http.Get(weatherAPIEndpoint)
 	if err != nil || resp.StatusCode != 200 {

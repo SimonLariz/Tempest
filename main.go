@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/SimonLariz/Tempest/pkg/location"
+	"github.com/SimonLariz/Tempest/pkg/weather"
 	"github.com/joho/godotenv"
 )
 
@@ -30,8 +31,12 @@ func main() {
 	}
 	fmt.Println("API Key: ", apiKey)
 
-	// Get the location info
+	// Get validated zip code
 	zipCodeResp := location.GetLocation()
 	zipCodeNumber := zipCodeResp.PostCode
 	fmt.Println("Zip Code: ", zipCodeNumber)
+
+	// Get weather data
+	weatherResp := weather.GetWeather(zipCodeNumber, apiKey)
+	fmt.Println("Weather: ", weatherResp)
 }
