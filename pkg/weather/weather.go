@@ -56,7 +56,7 @@ type weatherResponse struct {
 }
 
 // GetWeatherData fetches weather data for a given zip code
-func GetWeatherData(zipCode, apiKey string) (*WeatherResponse, error) {
+func GetWeatherData(zipCode, apiKey string) (*weatherResponse, error) {
 	baseURL := "https://api.weatherapi.com/v1/current.json"
 	u, err := url.Parse(baseURL)
 	if err != nil {
@@ -78,7 +78,7 @@ func GetWeatherData(zipCode, apiKey string) (*WeatherResponse, error) {
 		return nil, fmt.Errorf("API request failed with status code: %d", resp.StatusCode)
 	}
 
-	var weatherResponse WeatherResponse
+	var weatherResponse weatherResponse
 	if err := json.NewDecoder(resp.Body).Decode(&weatherResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
@@ -87,51 +87,36 @@ func GetWeatherData(zipCode, apiKey string) (*WeatherResponse, error) {
 }
 
 // GetTemperatureCelsius returns the temperature in Celsius
-func (w *WeatherResponse) GetTemperatureCelsius() float64 {
+func (w *weatherResponse) GetTemperatureCelsius() float64 {
 	return w.Current.TempC
 }
 
 // GetTemperatureFahrenheit returns the temperature in Fahrenheit
-func (w *WeatherResponse) GetTemperatureFahrenheit() float64 {
+func (w *weatherResponse) GetTemperatureFahrenheit() float64 {
 	return w.Current.TempF
 }
 
 // GetWindSpeed returns the wind speed in mph
-func (w *WeatherResponse) GetWindSpeed() float64 {
+func (w *weatherResponse) GetWindSpeed() float64 {
 	return w.Current.WindMph
 }
 
 // GetWindDirection returns the wind direction
-func (w *WeatherResponse) GetWindDirection() string {
+func (w *weatherResponse) GetWindDirection() string {
 	return w.Current.WindDir
 }
 
 // GetHumidity returns the humidity
-func (w *WeatherResponse) GetHumidity() int {
+func (w *weatherResponse) GetHumidity() int {
 	return w.Current.Humidity
 }
 
 // GetCloudCover returns the cloud cover
-func (w *WeatherResponse) GetCloudCover() int {
+func (w *weatherResponse) GetCloudCover() int {
 	return w.Current.Cloud
 }
 
 // GetWeatherCondition returns the weather condition
-func (w *WeatherResponse) GetWeatherCondition() string {
+func (w *weatherResponse) GetWeatherCondition() string {
 	return w.Current.Condition.Text
-}
-
-// GetCity returns the city name
-func (w *WeatherResponse) GetCity() string {
-	return w.Location.Name
-}
-
-// GetRegion returns the region name
-func (w *WeatherResponse) GetRegion() string {
-	return w.Location.Region
-}
-
-// GetCountry returns the country name
-func (w *WeatherResponse) GetCountry() string {
-	return w.Location.Country
 }
