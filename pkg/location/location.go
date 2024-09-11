@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/spf13/viper"
+	"net/url"
 )
 
 type zipCodeResponse struct {
@@ -21,103 +20,50 @@ type zipCodeResponse struct {
 	} `json:"places"`
 }
 
-func checkConfig() {
-	// Check if the config file exists and create it if it doesn't
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	viper.SetConfigType("yaml")
-
-	err := viper.ReadInConfig()
+// GetLocationData fetches location data for a given zip code
+func GetLocationData(zipCode string) (*zipCodeResponse, error) {
+	baseURL := "https://api.zippopotam.us/us/"
+	u, err := url.Parse(baseURL)
 	if err != nil {
-		viper.Set("zip_code", "")
-		viper.WriteConfigAs("config.yaml")
-	}
-}
-
-func GetLocation() zipCodeResponse {
-	// Check the config file
-	checkConfig()
-	// Check config file for ZIP code
-	zipCode := viper.GetString("zip_code")
-	if zipCode != "" {
-		// Validate the zip code
-		zipCodeIsValid, zipCodeJSON := validateZipCode(zipCode)
-		if zipCodeIsValid {
-			return zipCodeJSON
-		}
-	} else {
-		// Get the zip code from the user
-		zipCodeJSON := getZipCodeFromUser()
-		return zipCodeJSON
-	}
-	return zipCodeResponse{}
-}
-
-func validateZipCode(zipCode string) (bool, zipCodeResponse) {
-	// Validate the zip code with the zippopotam.us API
-	zipCodeAPIEndpoint := "https://api.zippopotam.us/us/" + zipCode
-
-	resp, err := http.Get(zipCodeAPIEndpoint)
-	if err != nil || resp.StatusCode != 200 {
-		return false, zipCodeResponse{}
+		return nil, fmt.Errorf("failed to parse URL: %v", err)
 	}
 
+	u.Path += zipCode
+
+	resp, err := http.Get(u.String())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get location data: %v", err)
+	}
 	defer resp.Body.Close()
 
-	// If the zip code is valid, create a zipCodeResponse struct
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status code: %d", resp.StatusCode)
+	}
+
 	var zipCodeResponse zipCodeResponse
-	// Decode the response into the zipCodeResponse struct
-	json.NewDecoder(resp.Body).Decode(&zipCodeResponse)
-
-	return true, zipCodeResponse
-}
-
-func GetLocationInfo() {
-	// Print the location information
-	user_location := GetLocation()
-	fmt.Println("Location: ")
-	fmt.Println(user_location.Places[0].PlaceName, ", ", user_location.Places[0].State)
-}
-
-func GetZipCode() string {
-	// Get the zip code from the user
-	zipCodeJSON := GetLocation()
-	return zipCodeJSON.PostCode
-}
-
-func getZipCodeFromUser() zipCodeResponse {
-	// While the zip code is invalid
-	for {
-		// Get the zip code from the user
-		fmt.Printf("Enter a zip code: ")
-		var zipCode string
-		fmt.Scanln(&zipCode)
-
-		// Validate the zip code
-		zipCodeIsValid, zipCodeJSON := validateZipCode(zipCode)
-		if zipCodeIsValid {
-			return zipCodeJSON
-		} else {
-			fmt.Println("Invalid zip code. Please try again.")
-		}
+	if err := json.NewDecoder(resp.Body).Decode(&zipCodeResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %v", err)
 	}
+
+	return &zipCodeResponse, nil
 }
 
-func promptUserToSaveZipCode(zip_code string) {
-	// Prompt the user to save the zip code
-	fmt.Printf("Would you like to save this zip code? (y/n): ")
-	var saveZipCode string
-	fmt.Scanln(&saveZipCode)
-
-	if saveZipCode == "y" {
-		// Save the zip code to the config file
-		viper.Set("zip_code", zip_code)
-		viper.WriteConfigAs("config.yaml")
-	}
+// GetPostCode returns the post code
+func (z *zipCodeResponse) GetPostCode() string {
+	return z.PostCode
 }
 
-func ClearLocation() {
-	// Clear the location
-	viper.Set("zip_code", "")
-	viper.WriteConfigAs("config.yaml")
+// GetCountry returns the country
+func (z *zipCodeResponse) GetCountry() string {
+	return z.Country
+}
+
+// GetCity returns the city
+func (z *zipCodeResponse) GetCity() string {
+	return z.Places[0].PlaceName
+}
+
+// GetState returns the state
+func (z *zipCodeResponse) GetState() string {
+	return z.Places[0].State
 }
